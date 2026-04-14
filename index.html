@@ -352,6 +352,97 @@
     .excel-cols th { text-align: left; color: var(--muted); font-weight: 600; padding: 0.2rem 0.5rem; font-size: 0.75rem; letter-spacing: 0.05em; text-transform: uppercase; }
     .excel-cols td { padding: 0.25rem 0.5rem; color: var(--text); }
     .excel-cols tr:not(:last-child) td { border-bottom: 1px solid var(--border); }
+
+    /* ── PERSONAL MESSAGE ── */
+    .personal-msg-wrap { display: flex; flex-direction: column; gap: 0.6rem; }
+    .personal-msg-label { font-size: 0.82rem; color: var(--muted); }
+    .personal-msg-label strong { color: var(--text); }
+    textarea.personal-msg {
+      width: 100%;
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      font-family: 'Nunito', sans-serif;
+      font-size: 0.88rem;
+      padding: 0.8rem 1rem;
+      resize: vertical;
+      min-height: 80px;
+      transition: border-color 0.18s;
+      line-height: 1.5;
+    }
+    textarea.personal-msg::placeholder { color: var(--muted2); }
+    textarea.personal-msg:focus { outline: none; border-color: var(--gold); }
+    .char-counter { font-size: 0.72rem; color: var(--muted2); text-align: right; }
+
+    /* ── CONTACT SELECTION ── */
+    .contact-row { cursor: default; }
+    .contact-row label {
+      display: flex; align-items: center; gap: 0.8rem;
+      width: 100%; cursor: pointer;
+    }
+    .contact-cb {
+      appearance: none;
+      width: 16px; height: 16px;
+      border: 1.5px solid var(--muted2);
+      border-radius: 4px;
+      flex-shrink: 0;
+      cursor: pointer;
+      position: relative;
+      transition: all 0.15s;
+      background: transparent;
+    }
+    .contact-cb:checked {
+      background: var(--gold);
+      border-color: var(--gold);
+    }
+    .contact-cb:checked::after {
+      content: '✓';
+      position: absolute;
+      top: -1px; left: 1px;
+      font-size: 0.7rem;
+      color: #000;
+      font-weight: 900;
+    }
+    .select-all-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 0.2rem 0.2rem 0.5rem;
+    }
+    .btn-select-all {
+      background: none; border: none; font-family: 'Nunito', sans-serif;
+      font-size: 0.78rem; color: var(--blue); cursor: pointer; padding: 0;
+    }
+    .selected-count { font-size: 0.78rem; color: var(--muted); }
+
+    /* ── COLLAPSIBLE API INFO ── */
+    .collapsible-trigger {
+      display: flex; align-items: center; gap: 0.5rem;
+      background: none; border: none; width: 100%;
+      color: var(--muted); font-family: 'Nunito', sans-serif;
+      font-size: 0.82rem; cursor: pointer; padding: 0.6rem 0;
+      text-align: left; transition: color 0.15s;
+    }
+    .collapsible-trigger:hover { color: var(--gold2); }
+    .collapsible-arrow { transition: transform 0.2s; font-style: normal; display: inline-block; }
+    .collapsible-trigger.open .collapsible-arrow { transform: rotate(90deg); }
+    .collapsible-body { display: none; padding-top: 0.5rem; }
+    .collapsible-body.open { display: block; }
+
+    /* Preview del mensaje final */
+    .msg-preview {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.9rem 1rem;
+      font-size: 0.82rem;
+      color: var(--muted);
+      white-space: pre-wrap;
+      line-height: 1.6;
+      margin-top: 0.8rem;
+      display: none;
+    }
+    .msg-preview.show { display: block; }
+    .msg-preview-label { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted2); margin-bottom: 0.4rem; }
   </style>
 </head>
 <body>
@@ -378,29 +469,6 @@
     </div>
   </div>
 
-  <!-- ② CÓMO OBTENER API KEY -->
-  <div class="card">
-    <div class="card-title">⚙️ Cómo obtener la API key (una vez por persona)</div>
-    <div class="info-steps">
-      <div class="info-step">
-        <div class="step-num">1</div>
-        <div class="step-text">Cada persona agrega a WhatsApp el número <strong>+34 644 64 80 11</strong> (es el bot de CallMeBot)</div>
-      </div>
-      <div class="info-step">
-        <div class="step-num">2</div>
-        <div class="step-text">Le envían exactamente este mensaje: <code>I allow callmebot to send me messages</code></div>
-      </div>
-      <div class="info-step">
-        <div class="step-num">3</div>
-        <div class="step-text">Recibirán su <strong>API key personal</strong> en segundos (ej: <code>1234567</code>). Te la comparten a ti.</div>
-      </div>
-      <div class="info-step">
-        <div class="step-num">4</div>
-        <div class="step-text">La pones en tu Excel junto al nombre y número → subes el Excel aquí.</div>
-      </div>
-    </div>
-  </div>
-
   <!-- ③ CARGAR EXCEL -->
   <div class="card">
     <div class="card-title">📋 Contactos (Excel)</div>
@@ -415,13 +483,34 @@
 
     <button class="template-link" onclick="downloadTemplate()">⬇ Descargar plantilla Excel de ejemplo</button>
 
-    <div class="excel-cols" style="margin-top:1rem;">
-      <table>
-        <tr><th>Columna A</th><th>Columna B</th><th>Columna C</th></tr>
-        <tr><td>nombre</td><td>telefono</td><td>apikey</td></tr>
-        <tr><td style="color:var(--muted)">María</td><td style="color:var(--muted)">51987654321</td><td style="color:var(--muted)">1234567</td></tr>
-        <tr><td style="color:var(--muted)">Juan</td><td style="color:var(--muted)">51912345678</td><td style="color:var(--muted)">7654321</td></tr>
-      </table>
+    <!-- Collapsible: ¿qué es la API key? -->
+    <div style="margin-top:0.8rem;">
+      <button class="collapsible-trigger" onclick="toggleApiHelp(this)">
+        <i class="collapsible-arrow">▶</i> ¿Qué es la "apikey" y cómo la consigo?
+      </button>
+      <div class="collapsible-body" id="api-help-body">
+        <div class="info-steps">
+          <div class="info-step">
+            <div class="step-num">1</div>
+            <div class="step-text">Cada persona guarda en WhatsApp el número <strong>+34 644 64 80 11</strong> (bot de CallMeBot)</div>
+          </div>
+          <div class="info-step">
+            <div class="step-num">2</div>
+            <div class="step-text">Le envían este mensaje exacto: <code>I allow callmebot to send me messages</code></div>
+          </div>
+          <div class="info-step">
+            <div class="step-num">3</div>
+            <div class="step-text">Recibirán su <strong>API key</strong> en segundos (ej: <code>1234567</code>) — la ponen en tu Excel.</div>
+          </div>
+        </div>
+        <div class="excel-cols" style="margin-top:0.8rem;">
+          <table>
+            <tr><th>Columna A</th><th>Columna B</th><th>Columna C</th></tr>
+            <tr><td>nombre</td><td>telefono</td><td>apikey</td></tr>
+            <tr><td style="color:var(--muted)">María</td><td style="color:var(--muted)">51987654321</td><td style="color:var(--muted)">1234567</td></tr>
+          </table>
+        </div>
+      </div>
     </div>
 
     <!-- Contactos cargados -->
@@ -430,8 +519,30 @@
         <span class="contacts-count" id="contacts-count"></span>
         <button class="btn-clear" onclick="clearContacts()">✕ Borrar lista</button>
       </div>
+      <div class="select-all-row" id="select-all-row" style="display:none;">
+        <span class="selected-count" id="selected-count"></span>
+        <button class="btn-select-all" onclick="toggleSelectAll()">Seleccionar todos</button>
+      </div>
       <div id="contact-list"></div>
     </div>
+  </div>
+
+  <!-- ③b MENSAJE PERSONAL -->
+  <div class="card" id="card-personal" style="display:none;">
+    <div class="card-title">✏️ Mensaje personal (opcional)</div>
+    <div class="personal-msg-wrap">
+      <p class="personal-msg-label">Añade algo tuyo — se enviará <strong>antes</strong> del versículo a los contactos seleccionados.</p>
+      <textarea class="personal-msg" id="personal-msg" maxlength="300"
+        placeholder="Ej: ¡Buenos días familia! Espero que estén muy bien hoy 🌻"
+        oninput="onPersonalMsgInput()"></textarea>
+      <div class="char-counter"><span id="char-count">0</span>/300</div>
+    </div>
+    <!-- Preview -->
+    <div id="msg-preview-wrap" style="display:none;">
+      <div class="msg-preview-label">Vista previa del mensaje completo</div>
+      <div class="msg-preview show" id="msg-preview"></div>
+    </div>
+    <button class="btn-ghost" style="margin-top:0.6rem; font-size:0.78rem;" onclick="togglePreview()">👁 Ver/ocultar vista previa</button>
   </div>
 
   <!-- ④ ENVIAR -->
@@ -444,8 +555,6 @@
       </button>
       <div class="send-note" id="send-note">Carga un Excel con contactos para habilitar el envío</div>
     </div>
-
-    <!-- Progress -->
     <div class="progress-wrap" id="progress-wrap" style="margin-top:1.2rem;">
       <div class="progress-bar-bg"><div class="progress-bar-fill" id="progress-fill"></div></div>
       <div style="font-size:0.78rem; color:var(--muted); text-align:center;" id="progress-text"></div>
@@ -530,6 +639,7 @@ const VERSES = {
 let currentTheme = 'esperanza';
 let currentVerse = null;
 let contacts = []; // { name, phone, apikey } — nunca se persisten
+let previewVisible = false;
 
 // ─── INIT ─────────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
@@ -635,22 +745,48 @@ function renderContacts() {
   loaded.classList.add('show');
   count.textContent = `${contacts.length} contacto(s) cargado(s)`;
 
-  list.innerHTML = contacts.map(c => `
+  list.innerHTML = contacts.map((c, i) => `
     <div class="contact-row">
-      <div class="contact-avatar">${c.name[0].toUpperCase()}</div>
-      <div class="contact-name">${c.name}</div>
-      <div class="contact-phone">${maskPhone(c.phone)}</div>
-      ${c.apikey
-        ? `<span class="contact-key">✓ key</span>`
-        : `<span class="contact-nokey">sin key</span>`}
+      <label>
+        <input type="checkbox" class="contact-cb" data-idx="${i}" ${c.apikey ? 'checked' : 'disabled'}
+          onchange="updateSelectedCount()">
+        <div class="contact-avatar">${c.name[0].toUpperCase()}</div>
+        <div class="contact-name">${c.name}</div>
+        <div class="contact-phone">${maskPhone(c.phone)}</div>
+        ${c.apikey
+          ? `<span class="contact-key">✓ key</span>`
+          : `<span class="contact-nokey">sin key</span>`}
+      </label>
     </div>
   `).join('');
 
   const withKey = contacts.filter(c => c.apikey).length;
-  btn.disabled = withKey === 0;
-  note.textContent = withKey > 0
-    ? `Se enviará a ${withKey} contacto(s) con API key configurada`
-    : 'Ningún contacto tiene API key — agrega las keys en el Excel';
+  document.getElementById('select-all-row').style.display = withKey > 0 ? 'flex' : 'none';
+  document.getElementById('card-personal').style.display = withKey > 0 ? 'block' : 'none';
+
+  updateSelectedCount();
+}
+
+function updateSelectedCount() {
+  const checked = document.querySelectorAll('.contact-cb:checked').length;
+  const btn  = document.getElementById('btn-send');
+  const note = document.getElementById('send-note');
+  const span = document.getElementById('selected-count');
+  if (span) span.textContent = `${checked} seleccionado(s)`;
+  btn.disabled = checked === 0;
+  note.textContent = checked > 0
+    ? `Se enviará a ${checked} contacto(s) seleccionado(s)`
+    : 'Selecciona al menos un contacto';
+  updatePreview();
+}
+
+let _allSelected = true;
+function toggleSelectAll() {
+  const cbs = document.querySelectorAll('.contact-cb:not(:disabled)');
+  _allSelected = !_allSelected;
+  cbs.forEach(cb => cb.checked = _allSelected);
+  document.querySelector('.btn-select-all').textContent = _allSelected ? 'Deseleccionar todos' : 'Seleccionar todos';
+  updateSelectedCount();
 }
 
 function clearContacts() {
@@ -660,6 +796,8 @@ function clearContacts() {
   document.getElementById('btn-send').disabled = true;
   document.getElementById('send-note').textContent = 'Carga un Excel con contactos para habilitar el envío';
   document.getElementById('file-input').value = '';
+  document.getElementById('card-personal').style.display = 'none';
+  document.getElementById('select-all-row').style.display = 'none';
   addLog('Lista de contactos borrada de memoria', 'info');
 }
 
@@ -677,12 +815,57 @@ function downloadTemplate() {
   XLSX.writeFile(wb, 'contactos-versiculo.xlsx');
 }
 
+// ─── MENSAJE PERSONAL ────────────────────────────────────────────────────────
+function buildFullMessage(personalNote) {
+  const days   = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+  const months = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  const now    = new Date();
+  const verseBlock = `🌅 *Versículo del día*\n${days[now.getDay()]}, ${now.getDate()} de ${months[now.getMonth()]}\n\n📖 _"${currentVerse.text}"_\n\n— *${currentVerse.ref}*\n\n🙏 Que Dios bendiga tu día`;
+  if (personalNote && personalNote.trim()) {
+    return `${personalNote.trim()}\n\n${verseBlock}`;
+  }
+  return verseBlock;
+}
+
+function onPersonalMsgInput() {
+  const val = document.getElementById('personal-msg').value;
+  document.getElementById('char-count').textContent = val.length;
+  updatePreview();
+}
+
+function updatePreview() {
+  if (!currentVerse) return;
+  const note = document.getElementById('personal-msg') ? document.getElementById('personal-msg').value : '';
+  document.getElementById('msg-preview').textContent = buildFullMessage(note);
+}
+
+function togglePreview() {
+  const wrap = document.getElementById('msg-preview-wrap');
+  previewVisible = !previewVisible;
+  wrap.style.display = previewVisible ? 'block' : 'none';
+  if (previewVisible) updatePreview();
+}
+
+// ─── COLLAPSIBLE ─────────────────────────────────────────────────────────────
+function toggleApiHelp(btn) {
+  btn.classList.toggle('open');
+  document.getElementById('api-help-body').classList.toggle('open');
+}
+
 // ─── ENVIAR ───────────────────────────────────────────────────────────────────
 async function sendAll() {
   if (!currentVerse || contacts.length === 0) return;
 
-  const toSend = contacts.filter(c => c.apikey);
-  if (toSend.length === 0) { addLog('Ningún contacto tiene API key', 'err'); return; }
+  // Solo los contactos marcados con checkbox
+  const checked = document.querySelectorAll('.contact-cb:checked');
+  const selectedIdxs = new Set([...checked].map(cb => parseInt(cb.dataset.idx)));
+  const toSend = contacts.filter((c, i) => selectedIdxs.has(i) && c.apikey);
+
+  if (toSend.length === 0) { addLog('Ningún contacto seleccionado con API key', 'err'); return; }
+
+  const personalNote = document.getElementById('personal-msg').value;
+  const msgText = buildFullMessage(personalNote);
+  const encoded = encodeURIComponent(msgText);
 
   const btn = document.getElementById('btn-send');
   const progressWrap = document.getElementById('progress-wrap');
@@ -691,12 +874,6 @@ async function sendAll() {
 
   btn.disabled = true;
   progressWrap.classList.add('show');
-
-  const days   = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
-  const months = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
-  const now    = new Date();
-  const msgText = `🌅 *Versículo del día*\n${days[now.getDay()]}, ${now.getDate()} de ${months[now.getMonth()]}\n\n📖 _"${currentVerse.text}"_\n\n— *${currentVerse.ref}*\n\n🙏 Que Dios bendiga tu día`;
-  const encoded = encodeURIComponent(msgText);
 
   let ok = 0, err = 0;
 
