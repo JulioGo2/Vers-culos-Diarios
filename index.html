@@ -1,584 +1,553 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Versículo Diario · WhatsApp</title>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lato:wght@300;400;700&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Nunito:wght@300;400;600;700&display=swap" rel="stylesheet"/>
+  <!-- SheetJS para leer Excel -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <style>
     :root {
-      --gold: #c9a84c;
-      --gold-light: #e8cc80;
-      --dark: #1a1208;
-      --dark2: #2a1e0a;
-      --cream: #f5ead6;
-      --cream2: #ede0c4;
-      --text: #3d2b10;
-      --muted: #8a7050;
-      --green: #4a7c59;
-      --red: #8b2e2e;
+      --bg:       #0d1117;
+      --bg2:      #161b22;
+      --bg3:      #21262d;
+      --border:   rgba(255,255,255,0.08);
+      --gold:     #d4a843;
+      --gold2:    #f0c96a;
+      --green:    #3fb950;
+      --red:      #f85149;
+      --blue:     #58a6ff;
+      --text:     #e6edf3;
+      --muted:    #7d8590;
+      --muted2:   #484f58;
     }
-
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
-      font-family: 'Lato', sans-serif;
-      background: var(--dark);
-      color: var(--cream);
+      font-family: 'Nunito', sans-serif;
+      background: var(--bg);
+      color: var(--text);
       min-height: 100vh;
       background-image:
-        radial-gradient(ellipse at 20% 10%, rgba(201,168,76,0.12) 0%, transparent 50%),
-        radial-gradient(ellipse at 80% 90%, rgba(201,168,76,0.08) 0%, transparent 50%);
+        radial-gradient(ellipse 60% 40% at 50% 0%, rgba(212,168,67,0.07) 0%, transparent 70%);
     }
 
-    /* HEADER */
+    /* ── HEADER ── */
     header {
       text-align: center;
-      padding: 3rem 1rem 2rem;
-      border-bottom: 1px solid rgba(201,168,76,0.25);
-      position: relative;
+      padding: 2.5rem 1rem 2rem;
+      border-bottom: 1px solid var(--border);
     }
-    header::before {
-      content: '✦';
-      font-size: 1.2rem;
-      color: var(--gold);
+    .header-icon {
+      font-size: 2rem;
       display: block;
-      margin-bottom: 0.8rem;
-      opacity: 0.7;
+      margin-bottom: 0.5rem;
     }
     header h1 {
-      font-family: 'Playfair Display', serif;
-      font-size: clamp(1.8rem, 5vw, 3rem);
-      color: var(--gold-light);
-      letter-spacing: 0.02em;
-      line-height: 1.2;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(1.8rem, 5vw, 2.8rem);
+      color: var(--gold2);
+      font-weight: 600;
+      letter-spacing: 0.03em;
     }
-    header p {
-      margin-top: 0.6rem;
-      color: var(--muted);
-      font-weight: 300;
-      font-size: 0.95rem;
-      letter-spacing: 0.05em;
+    header p { color: var(--muted); font-size: 0.88rem; margin-top: 0.3rem; font-weight: 300; }
+
+    /* ── LAYOUT ── */
+    .wrap {
+      max-width: 700px;
+      margin: 0 auto;
+      padding: 2rem 1.2rem 4rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
     }
 
-    /* VERSE CARD */
-    .verse-card {
-      max-width: 680px;
-      margin: 2.5rem auto 0;
-      padding: 0 1.5rem;
+    /* ── CARD ── */
+    .card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.5rem;
     }
-    .verse-box {
-      background: var(--dark2);
-      border: 1px solid rgba(201,168,76,0.3);
-      border-radius: 4px;
-      padding: 2rem 2.5rem;
-      position: relative;
-      overflow: hidden;
-    }
-    .verse-box::before {
-      content: '\201C';
-      font-family: 'Playfair Display', serif;
-      font-size: 8rem;
-      color: rgba(201,168,76,0.08);
-      position: absolute;
-      top: -1rem;
-      left: 0.5rem;
-      line-height: 1;
-      pointer-events: none;
-    }
-    .verse-label {
-      font-size: 0.7rem;
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-      color: var(--gold);
-      margin-bottom: 1rem;
-    }
-    #verse-text {
-      font-family: 'Playfair Display', serif;
-      font-size: clamp(1rem, 2.5vw, 1.2rem);
-      line-height: 1.75;
-      color: var(--cream);
-      font-style: italic;
-      min-height: 60px;
-    }
-    #verse-ref {
-      margin-top: 1rem;
-      font-size: 0.85rem;
-      color: var(--gold);
+    .card-title {
+      font-size: 0.68rem;
       font-weight: 700;
-      letter-spacing: 0.05em;
-    }
-    .verse-actions {
-      display: flex;
-      gap: 0.75rem;
-      margin-top: 1.2rem;
-      flex-wrap: wrap;
-    }
-    .btn-small {
-      background: transparent;
-      border: 1px solid rgba(201,168,76,0.4);
-      color: var(--gold-light);
-      padding: 0.45rem 1rem;
-      font-size: 0.8rem;
-      font-family: 'Lato', sans-serif;
-      letter-spacing: 0.08em;
-      cursor: pointer;
-      border-radius: 2px;
-      transition: all 0.2s;
-    }
-    .btn-small:hover {
-      background: rgba(201,168,76,0.12);
-      border-color: var(--gold);
-    }
-
-    /* TEMA SELECT */
-    .theme-row {
-      display: flex;
-      gap: 0.5rem;
-      flex-wrap: wrap;
-      margin-top: 1.2rem;
-    }
-    .theme-chip {
-      background: transparent;
-      border: 1px solid rgba(255,255,255,0.15);
-      color: var(--muted);
-      padding: 0.3rem 0.8rem;
-      font-size: 0.78rem;
-      border-radius: 20px;
-      cursor: pointer;
-      font-family: 'Lato', sans-serif;
-      transition: all 0.2s;
-    }
-    .theme-chip:hover, .theme-chip.active {
-      border-color: var(--gold);
-      color: var(--gold-light);
-      background: rgba(201,168,76,0.08);
-    }
-
-    /* MAIN SECTION */
-    main {
-      max-width: 680px;
-      margin: 2rem auto;
-      padding: 0 1.5rem 4rem;
-    }
-
-    .section-title {
-      font-size: 0.7rem;
-      letter-spacing: 0.2em;
+      letter-spacing: 0.15em;
       text-transform: uppercase;
       color: var(--gold);
       margin-bottom: 1.2rem;
-      padding-bottom: 0.6rem;
-      border-bottom: 1px solid rgba(201,168,76,0.2);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .card-title::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
     }
 
-    /* CONTACT LIST */
-    .contact-list {
-      display: flex;
-      flex-direction: column;
-      gap: 0.6rem;
+    /* ── VERSE BOX ── */
+    .verse-box {
+      background: var(--bg3);
+      border-left: 3px solid var(--gold);
+      border-radius: 0 6px 6px 0;
+      padding: 1.2rem 1.5rem;
       margin-bottom: 1rem;
-      max-height: 280px;
-      overflow-y: auto;
+      position: relative;
     }
-    .contact-list::-webkit-scrollbar { width: 4px; }
-    .contact-list::-webkit-scrollbar-track { background: transparent; }
-    .contact-list::-webkit-scrollbar-thumb { background: rgba(201,168,76,0.3); border-radius: 2px; }
-
-    .contact-item {
-      display: flex;
-      align-items: center;
-      gap: 0.8rem;
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 3px;
-      padding: 0.7rem 1rem;
-      transition: border-color 0.2s;
+    .verse-quote {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(1rem, 2.5vw, 1.25rem);
+      line-height: 1.7;
+      font-style: italic;
+      color: var(--text);
     }
-    .contact-item:hover { border-color: rgba(201,168,76,0.3); }
-    .contact-avatar {
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, var(--gold), var(--green));
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 0.85rem;
+    .verse-ref {
+      margin-top: 0.7rem;
+      font-size: 0.82rem;
       font-weight: 700;
-      color: var(--dark);
-      flex-shrink: 0;
+      color: var(--gold);
+      letter-spacing: 0.04em;
     }
-    .contact-info { flex: 1; }
-    .contact-name { font-size: 0.9rem; font-weight: 700; color: var(--cream); }
-    .contact-number { font-size: 0.78rem; color: var(--muted); }
-    .contact-del {
+
+    /* THEME CHIPS */
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      margin-bottom: 1rem;
+    }
+    .chip {
+      background: transparent;
+      border: 1px solid var(--muted2);
+      color: var(--muted);
+      padding: 0.25rem 0.75rem;
+      font-size: 0.78rem;
+      font-family: 'Nunito', sans-serif;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: all 0.18s;
+    }
+    .chip:hover { border-color: var(--gold); color: var(--gold2); }
+    .chip.active { border-color: var(--gold); color: var(--gold2); background: rgba(212,168,67,0.1); }
+
+    .row-btns { display: flex; gap: 0.6rem; flex-wrap: wrap; }
+    .btn-ghost {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      padding: 0.4rem 0.9rem;
+      font-size: 0.8rem;
+      font-family: 'Nunito', sans-serif;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.18s;
+    }
+    .btn-ghost:hover { border-color: var(--gold); color: var(--gold2); }
+
+    /* ── EXCEL UPLOAD ── */
+    .upload-zone {
+      border: 2px dashed var(--muted2);
+      border-radius: 8px;
+      padding: 2rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      position: relative;
+    }
+    .upload-zone:hover, .upload-zone.drag { border-color: var(--gold); background: rgba(212,168,67,0.05); }
+    .upload-zone input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+    .upload-icon { font-size: 2rem; display: block; margin-bottom: 0.5rem; }
+    .upload-zone p { color: var(--muted); font-size: 0.88rem; }
+    .upload-zone strong { color: var(--gold2); }
+
+    .template-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      margin-top: 0.8rem;
+      font-size: 0.8rem;
+      color: var(--blue);
+      cursor: pointer;
+      text-decoration: underline;
       background: none;
       border: none;
-      color: var(--muted);
-      cursor: pointer;
-      font-size: 1rem;
-      padding: 0.2rem 0.4rem;
-      border-radius: 2px;
-      transition: color 0.2s;
+      font-family: 'Nunito', sans-serif;
     }
-    .contact-del:hover { color: #c0392b; }
 
-    /* ADD CONTACT FORM */
-    .add-form {
-      display: grid;
-      grid-template-columns: 1fr 1fr auto;
-      gap: 0.6rem;
-      margin-bottom: 2rem;
+    /* ── CONTACT TABLE ── */
+    .contacts-loaded {
+      display: none;
+      flex-direction: column;
+      gap: 0.5rem;
     }
-    @media (max-width: 480px) {
-      .add-form { grid-template-columns: 1fr; }
-    }
-    .input-field {
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.15);
-      border-radius: 3px;
-      padding: 0.65rem 1rem;
-      color: var(--cream);
-      font-family: 'Lato', sans-serif;
-      font-size: 0.9rem;
-      transition: border-color 0.2s;
-      width: 100%;
-    }
-    .input-field::placeholder { color: var(--muted); }
-    .input-field:focus { outline: none; border-color: var(--gold); }
+    .contacts-loaded.show { display: flex; }
 
-    .btn-primary {
-      background: var(--gold);
-      color: var(--dark);
-      border: none;
-      padding: 0.65rem 1.4rem;
-      font-family: 'Lato', sans-serif;
-      font-size: 0.85rem;
+    .contacts-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.3rem;
+    }
+    .contacts-count {
+      font-size: 0.82rem;
+      color: var(--green);
       font-weight: 700;
-      letter-spacing: 0.08em;
-      cursor: pointer;
-      border-radius: 3px;
-      white-space: nowrap;
-      transition: background 0.2s;
     }
-    .btn-primary:hover { background: var(--gold-light); }
+    .btn-clear {
+      background: none;
+      border: none;
+      color: var(--red);
+      font-size: 0.78rem;
+      cursor: pointer;
+      font-family: 'Nunito', sans-serif;
+    }
 
-    /* SCHEDULE */
-    .schedule-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
+    .contact-row {
+      display: flex;
+      align-items: center;
       gap: 0.8rem;
-      margin-bottom: 2rem;
+      background: var(--bg3);
+      border-radius: 6px;
+      padding: 0.6rem 1rem;
+      font-size: 0.85rem;
     }
-    @media (max-width: 480px) { .schedule-row { grid-template-columns: 1fr; } }
-    .field-label {
-      font-size: 0.72rem;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
+    .contact-avatar {
+      width: 30px; height: 30px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--gold), #a67c00);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.75rem; font-weight: 700; color: #000;
+      flex-shrink: 0;
+    }
+    .contact-name { flex: 1; font-weight: 600; }
+    .contact-phone {
+      font-size: 0.75rem;
       color: var(--muted);
-      margin-bottom: 0.4rem;
+      /* Ocultar número real, mostrar máscara */
+      font-family: monospace;
+      letter-spacing: 0.05em;
+    }
+    .contact-key {
+      font-size: 0.7rem;
+      background: rgba(63,185,80,0.15);
+      color: var(--green);
+      border-radius: 4px;
+      padding: 0.1rem 0.4rem;
+    }
+    .contact-nokey {
+      font-size: 0.7rem;
+      background: rgba(248,81,73,0.15);
+      color: var(--red);
+      border-radius: 4px;
+      padding: 0.1rem 0.4rem;
     }
 
-    select.input-field {
-      -webkit-appearance: none;
-      appearance: none;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%238a7050'/%3E%3C/svg%3E");
-      background-repeat: no-repeat;
-      background-position: right 12px center;
-      cursor: pointer;
-    }
-
-    /* SEND BUTTON */
-    .send-section {
-      text-align: center;
-      margin-top: 1.5rem;
-    }
+    /* ── SEND BUTTON ── */
+    .send-wrap { text-align: center; }
     .btn-send {
-      background: var(--green);
+      background: linear-gradient(135deg, #238636, #2ea043);
       color: #fff;
       border: none;
-      padding: 0.9rem 2.5rem;
-      font-family: 'Lato', sans-serif;
+      padding: 0.9rem 2.8rem;
       font-size: 1rem;
       font-weight: 700;
-      letter-spacing: 0.1em;
+      font-family: 'Nunito', sans-serif;
+      border-radius: 8px;
       cursor: pointer;
-      border-radius: 3px;
       transition: all 0.2s;
       display: inline-flex;
       align-items: center;
       gap: 0.6rem;
+      letter-spacing: 0.03em;
+      box-shadow: 0 4px 15px rgba(46,160,67,0.3);
     }
-    .btn-send:hover { background: #3d6b4a; transform: translateY(-1px); }
-    .btn-send:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-    .btn-send svg { width: 18px; height: 18px; }
+    .btn-send:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(46,160,67,0.4); }
+    .btn-send:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
+    .send-note { font-size: 0.78rem; color: var(--muted); margin-top: 0.6rem; }
 
-    /* LOG */
-    .log-area {
-      margin-top: 1.5rem;
-      max-height: 160px;
-      overflow-y: auto;
+    /* ── PROGRESS ── */
+    .progress-wrap { display: none; }
+    .progress-wrap.show { display: block; }
+    .progress-bar-bg {
+      background: var(--bg3);
+      border-radius: 10px;
+      height: 6px;
+      overflow: hidden;
+      margin-bottom: 0.8rem;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--gold), var(--green));
+      border-radius: 10px;
+      width: 0%;
+      transition: width 0.4s;
+    }
+
+    /* ── LOG ── */
+    .log {
       display: flex;
       flex-direction: column;
-      gap: 0.4rem;
+      gap: 0.35rem;
+      max-height: 200px;
+      overflow-y: auto;
     }
+    .log::-webkit-scrollbar { width: 3px; }
+    .log::-webkit-scrollbar-thumb { background: var(--muted2); border-radius: 2px; }
     .log-item {
       font-size: 0.8rem;
-      padding: 0.4rem 0.8rem;
-      border-radius: 2px;
-      border-left: 3px solid transparent;
-    }
-    .log-ok { border-color: var(--green); background: rgba(74,124,89,0.1); color: #8ecfa0; }
-    .log-err { border-color: var(--red); background: rgba(139,46,46,0.1); color: #e08080; }
-    .log-info { border-color: var(--gold); background: rgba(201,168,76,0.08); color: var(--gold-light); }
-
-    /* CALLMEBOT SETUP */
-    .setup-box {
-      background: rgba(201,168,76,0.06);
-      border: 1px solid rgba(201,168,76,0.25);
+      padding: 0.35rem 0.7rem;
       border-radius: 4px;
-      padding: 1.2rem 1.5rem;
-      margin-bottom: 2rem;
+      border-left: 3px solid transparent;
+      font-family: monospace;
     }
-    .setup-box h3 {
-      font-family: 'Playfair Display', serif;
-      color: var(--gold-light);
-      font-size: 1rem;
-      margin-bottom: 0.6rem;
-    }
-    .setup-box ol {
-      padding-left: 1.2rem;
-      color: var(--muted);
-      font-size: 0.85rem;
-      line-height: 1.8;
-    }
-    .setup-box ol li strong { color: var(--cream2); }
-    .setup-box .apikey-row {
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 0.6rem;
-      margin-top: 1rem;
-    }
-    @media (max-width: 480px) { .setup-box .apikey-row { grid-template-columns: 1fr; } }
+    .log-ok  { border-color: var(--green); background: rgba(63,185,80,0.08); color: #8ecfa0; }
+    .log-err { border-color: var(--red);   background: rgba(248,81,73,0.08);  color: #f1a0a0; }
+    .log-info{ border-color: var(--gold);  background: rgba(212,168,67,0.08); color: var(--gold2); }
 
-    /* Empty state */
-    .empty-state {
-      text-align: center;
-      padding: 1.5rem;
-      color: var(--muted);
-      font-size: 0.85rem;
-      border: 1px dashed rgba(255,255,255,0.1);
-      border-radius: 3px;
+    /* ── CALLMEBOT INFO ── */
+    .info-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 0.7rem;
+    }
+    .info-step {
+      display: flex;
+      gap: 1rem;
+      align-items: flex-start;
+    }
+    .step-num {
+      width: 24px; height: 24px;
+      border-radius: 50%;
+      background: rgba(212,168,67,0.15);
+      border: 1px solid var(--gold);
+      color: var(--gold);
+      font-size: 0.75rem;
+      font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+    .step-text { font-size: 0.85rem; color: var(--muted); line-height: 1.5; }
+    .step-text strong { color: var(--text); }
+    .step-text code {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      padding: 0.1rem 0.4rem;
+      border-radius: 4px;
+      font-size: 0.82rem;
+      color: var(--gold2);
     }
 
-    .divider {
-      border: none;
-      border-top: 1px solid rgba(255,255,255,0.07);
-      margin: 2rem 0;
+    .excel-cols {
+      margin-top: 0.8rem;
+      background: var(--bg3);
+      border-radius: 6px;
+      padding: 0.8rem 1rem;
+      font-size: 0.82rem;
     }
-
-    .badge {
-      display: inline-block;
-      background: rgba(74,124,89,0.25);
-      color: #8ecfa0;
-      border: 1px solid rgba(74,124,89,0.4);
-      font-size: 0.68rem;
-      letter-spacing: 0.1em;
-      padding: 0.15rem 0.5rem;
-      border-radius: 2px;
-      text-transform: uppercase;
-      vertical-align: middle;
-      margin-left: 0.4rem;
-    }
+    .excel-cols table { width: 100%; border-collapse: collapse; }
+    .excel-cols th { text-align: left; color: var(--muted); font-weight: 600; padding: 0.2rem 0.5rem; font-size: 0.75rem; letter-spacing: 0.05em; text-transform: uppercase; }
+    .excel-cols td { padding: 0.25rem 0.5rem; color: var(--text); }
+    .excel-cols tr:not(:last-child) td { border-bottom: 1px solid var(--border); }
   </style>
 </head>
 <body>
 
 <header>
+  <span class="header-icon">🕊️</span>
   <h1>Versículo Diario</h1>
-  <p>Comparte la Palabra · WhatsApp · CallMeBot</p>
+  <p>Selecciona tu Excel · Elige el versículo · Envía por WhatsApp</p>
 </header>
 
-<!-- VERSE PREVIEW -->
-<div class="verse-card">
-  <div class="verse-box">
-    <div class="verse-label">Versículo del día</div>
-    <div id="verse-text">Cargando versículo...</div>
-    <div id="verse-ref"></div>
-    <div class="verse-actions">
-      <button class="btn-small" onclick="loadVerse()">↻ Nuevo versículo</button>
-      <button class="btn-small" onclick="copyVerse()">⧉ Copiar</button>
+<div class="wrap">
+
+  <!-- ① VERSÍCULO -->
+  <div class="card">
+    <div class="card-title">📖 Versículo del día</div>
+    <div class="verse-box">
+      <div class="verse-quote" id="verse-text">Cargando...</div>
+      <div class="verse-ref" id="verse-ref"></div>
+    </div>
+    <div class="chips" id="chips"></div>
+    <div class="row-btns">
+      <button class="btn-ghost" onclick="loadVerse()">↻ Nuevo versículo</button>
+      <button class="btn-ghost" onclick="copyVerse()">⧉ Copiar texto</button>
     </div>
   </div>
-  <div class="theme-row" id="theme-row"></div>
+
+  <!-- ② CÓMO OBTENER API KEY -->
+  <div class="card">
+    <div class="card-title">⚙️ Cómo obtener la API key (una vez por persona)</div>
+    <div class="info-steps">
+      <div class="info-step">
+        <div class="step-num">1</div>
+        <div class="step-text">Cada persona agrega a WhatsApp el número <strong>+34 644 64 80 11</strong> (es el bot de CallMeBot)</div>
+      </div>
+      <div class="info-step">
+        <div class="step-num">2</div>
+        <div class="step-text">Le envían exactamente este mensaje: <code>I allow callmebot to send me messages</code></div>
+      </div>
+      <div class="info-step">
+        <div class="step-num">3</div>
+        <div class="step-text">Recibirán su <strong>API key personal</strong> en segundos (ej: <code>1234567</code>). Te la comparten a ti.</div>
+      </div>
+      <div class="info-step">
+        <div class="step-num">4</div>
+        <div class="step-text">La pones en tu Excel junto al nombre y número → subes el Excel aquí.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ③ CARGAR EXCEL -->
+  <div class="card">
+    <div class="card-title">📋 Contactos (Excel)</div>
+
+    <!-- Upload zone -->
+    <div class="upload-zone" id="upload-zone">
+      <input type="file" id="file-input" accept=".xlsx,.xls,.csv" onchange="handleFile(this.files[0])"/>
+      <span class="upload-icon">📂</span>
+      <p>Arrastra tu Excel aquí o <strong>haz clic para elegirlo</strong></p>
+      <p style="font-size:0.75rem; margin-top:0.3rem;">Formatos: .xlsx · .xls · .csv</p>
+    </div>
+
+    <button class="template-link" onclick="downloadTemplate()">⬇ Descargar plantilla Excel de ejemplo</button>
+
+    <div class="excel-cols" style="margin-top:1rem;">
+      <table>
+        <tr><th>Columna A</th><th>Columna B</th><th>Columna C</th></tr>
+        <tr><td>nombre</td><td>telefono</td><td>apikey</td></tr>
+        <tr><td style="color:var(--muted)">María</td><td style="color:var(--muted)">51987654321</td><td style="color:var(--muted)">1234567</td></tr>
+        <tr><td style="color:var(--muted)">Juan</td><td style="color:var(--muted)">51912345678</td><td style="color:var(--muted)">7654321</td></tr>
+      </table>
+    </div>
+
+    <!-- Contactos cargados -->
+    <div class="contacts-loaded" id="contacts-loaded" style="margin-top:1rem;">
+      <div class="contacts-header">
+        <span class="contacts-count" id="contacts-count"></span>
+        <button class="btn-clear" onclick="clearContacts()">✕ Borrar lista</button>
+      </div>
+      <div id="contact-list"></div>
+    </div>
+  </div>
+
+  <!-- ④ ENVIAR -->
+  <div class="card">
+    <div class="card-title">📤 Enviar</div>
+    <div class="send-wrap">
+      <button class="btn-send" id="btn-send" onclick="sendAll()" disabled>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M20.52 3.449C18.24 1.245 15.24 0 12.045 0 5.463 0 .104 5.334.101 11.893c0 2.096.549 4.14 1.595 5.945L0 24l6.335-1.652a11.882 11.882 0 0 0 5.71 1.447h.006c6.584 0 11.935-5.336 11.938-11.896 0-3.176-1.24-6.165-3.469-8.45z"/></svg>
+        Enviar versículo por WhatsApp
+      </button>
+      <div class="send-note" id="send-note">Carga un Excel con contactos para habilitar el envío</div>
+    </div>
+
+    <!-- Progress -->
+    <div class="progress-wrap" id="progress-wrap" style="margin-top:1.2rem;">
+      <div class="progress-bar-bg"><div class="progress-bar-fill" id="progress-fill"></div></div>
+      <div style="font-size:0.78rem; color:var(--muted); text-align:center;" id="progress-text"></div>
+    </div>
+
+    <!-- Log -->
+    <div class="log" id="log" style="margin-top:1rem;"></div>
+  </div>
+
 </div>
 
-<main>
-
-  <!-- CALLMEBOT SETUP -->
-  <div class="setup-box">
-    <h3>⚙️ Configuración CallMeBot <span class="badge">Gratis</span></h3>
-    <ol>
-      <li>Cada número debe enviar primero el mensaje: <strong>«I allow callmebot to send me messages»</strong> al +34 644 64 80 11 (WhatsApp).</li>
-      <li>Recibirán una <strong>API key personal</strong> en respuesta.</li>
-      <li>Ingrésala al agregar el contacto abajo.</li>
-    </ol>
-    <div style="margin-top:0.8rem; font-size:0.8rem; color:var(--muted);">
-      📌 Más info: <a href="https://www.callmebot.com/blog/free-api-whatsapp-messages/" target="_blank" style="color:var(--gold);">callmebot.com</a>
-    </div>
-  </div>
-
-  <!-- CONTACTS -->
-  <div class="section-title">Contactos</div>
-  <div class="contact-list" id="contact-list">
-    <div class="empty-state" id="empty-msg">No hay contactos aún. Agrega el primero abajo.</div>
-  </div>
-
-  <div class="add-form">
-    <input class="input-field" id="inp-name" type="text" placeholder="Nombre (ej: María)">
-    <input class="input-field" id="inp-phone" type="text" placeholder="Número con código país (ej: 51987654321)">
-    <button class="btn-primary" onclick="addContact()">+ Agregar</button>
-  </div>
-  <div style="margin-top:-0.8rem; margin-bottom:1.5rem;">
-    <input class="input-field" id="inp-apikey" type="text" placeholder="API key de CallMeBot para ese número">
-  </div>
-
-  <hr class="divider">
-
-  <!-- SCHEDULE -->
-  <div class="section-title">Programación del envío</div>
-  <div class="schedule-row">
-    <div>
-      <div class="field-label">Hora de envío</div>
-      <input class="input-field" id="send-time" type="time" value="07:00">
-    </div>
-    <div>
-      <div class="field-label">Tema de versículos</div>
-      <select class="input-field" id="theme-select" onchange="selectTheme(this.value)">
-        <option value="faith">Fe</option>
-        <option value="hope">Esperanza</option>
-        <option value="love">Amor</option>
-        <option value="peace">Paz</option>
-        <option value="strength">Fortaleza</option>
-        <option value="wisdom">Sabiduría</option>
-        <option value="joy">Gozo</option>
-        <option value="grace">Gracia</option>
-      </select>
-    </div>
-  </div>
-
-  <!-- MANUAL SEND -->
-  <hr class="divider">
-  <div class="section-title">Envío</div>
-  <div class="send-section">
-    <button class="btn-send" id="btn-send" onclick="sendToAll()">
-      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.52 3.449C18.24 1.245 15.24 0 12.045 0 5.463 0 .104 5.334.101 11.893c0 2.096.549 4.14 1.595 5.945L0 24l6.335-1.652a11.882 11.882 0 0 0 5.71 1.447h.006c6.584 0 11.935-5.336 11.938-11.896 0-3.176-1.24-6.165-3.469-8.45z"/><path d="M12.043 21.785h-.004a9.87 9.87 0 0 1-5.031-1.378l-.36-.214-3.742.976.999-3.648-.235-.374a9.861 9.861 0 0 1-1.516-5.26c.001-5.45 4.436-9.884 9.889-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.881 9.884zm5.413-7.402c-.297-.148-1.758-.868-2.031-.967-.272-.099-.47-.148-.669.148-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.148-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.457.13-.605.134-.133.297-.347.446-.52.151-.174.2-.298.3-.497.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51a12.8 12.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z" fill="white"/></svg>
-      Enviar ahora a todos
-    </button>
-    <div style="font-size:0.75rem; color:var(--muted); margin-top:0.7rem;">
-      Se enviará el versículo actualmente mostrado arriba
-    </div>
-  </div>
-
-  <!-- LOG -->
-  <div class="log-area" id="log-area"></div>
-
-</main>
-
 <script>
-// ─── VERSE DATA (curated by theme) ───────────────────────────────────────────
+// ─── VERSÍCULOS ───────────────────────────────────────────────────────────────
 const VERSES = {
-  faith: [
-    { ref: "Hebreos 11:1", text: "La fe es la certeza de lo que se espera, y la convicción de lo que no se ve." },
-    { ref: "Marcos 9:23", text: "Todo es posible para el que cree." },
-    { ref: "Romanos 10:17", text: "La fe viene por el oír, y el oír, por la palabra de Dios." },
-    { ref: "Santiago 2:17", text: "Así también la fe, si no tiene obras, es muerta en sí misma." },
-    { ref: "Mateo 17:20", text: "Si tenéis fe como un grano de mostaza... nada os será imposible." },
-    { ref: "1 Corintios 2:5", text: "Para que vuestra fe no esté fundada en la sabiduría de los hombres, sino en el poder de Dios." },
+  fe: [
+    { ref:"Hebreos 11:1", text:"La fe es la certeza de lo que se espera, y la convicción de lo que no se ve." },
+    { ref:"Marcos 9:23",  text:"Todo es posible para el que cree." },
+    { ref:"Romanos 10:17",text:"La fe viene por el oír, y el oír, por la palabra de Dios." },
+    { ref:"Mateo 17:20",  text:"Si tenéis fe como un grano de mostaza... nada os será imposible." },
+    { ref:"Gálatas 2:20", text:"Con Cristo estoy juntamente crucificado, y ya no vivo yo, mas vive Cristo en mí." },
+    { ref:"1 Pedro 1:7",  text:"La prueba de vuestra fe es más preciosa que el oro." },
   ],
-  hope: [
-    { ref: "Jeremías 29:11", text: "Porque yo sé los planes que tengo para vosotros, planes de bienestar y no de calamidad, para daros un futuro y una esperanza." },
-    { ref: "Romanos 8:28", text: "A los que aman a Dios, todas las cosas les ayudan a bien." },
-    { ref: "Romanos 15:13", text: "El Dios de esperanza os llene de todo gozo y paz en el creer, para que abundéis en esperanza." },
-    { ref: "Lamentaciones 3:22-23", text: "Por la misericordia del Señor no hemos sido consumidos; sus misericordias nunca decaen. Nuevas son cada mañana." },
-    { ref: "Salmos 42:11", text: "¿Por qué te abates, oh alma mía? Espera en Dios, porque aún he de alabarle." },
+  esperanza: [
+    { ref:"Jeremías 29:11",        text:"Porque yo sé los planes que tengo para vosotros, planes de bienestar y no de calamidad, para daros un futuro y una esperanza." },
+    { ref:"Romanos 8:28",          text:"A los que aman a Dios, todas las cosas les ayudan a bien." },
+    { ref:"Lamentaciones 3:22-23", text:"Por la misericordia del Señor no hemos sido consumidos. Sus misericordias son nuevas cada mañana." },
+    { ref:"Salmos 42:11",          text:"Espera en Dios, porque aún he de alabarle, salvador de mi rostro y Dios mío." },
+    { ref:"Isaías 40:31",          text:"Los que esperan al Señor tendrán nuevas fuerzas; levantarán alas como las águilas." },
+    { ref:"Romanos 15:13",         text:"El Dios de esperanza os llene de todo gozo y paz en el creer." },
   ],
-  love: [
-    { ref: "Juan 3:16", text: "Porque de tal manera amó Dios al mundo, que ha dado a su Hijo unigénito, para que todo aquel que en él cree, no se pierda, mas tenga vida eterna." },
-    { ref: "1 Corintios 13:4-5", text: "El amor es sufrido, es benigno; el amor no tiene envidia; el amor no es jactancioso, no se envanece." },
-    { ref: "1 Juan 4:8", text: "El que no ama no ha conocido a Dios, porque Dios es amor." },
-    { ref: "Juan 15:13", text: "Nadie tiene mayor amor que este: que alguno ponga su vida por sus amigos." },
-    { ref: "Romanos 8:38-39", text: "Nada nos podrá separar del amor de Dios, que es en Cristo Jesús Señor nuestro." },
+  amor: [
+    { ref:"Juan 3:16",       text:"Porque de tal manera amó Dios al mundo, que ha dado a su Hijo unigénito, para que todo aquel que en él cree no se pierda, mas tenga vida eterna." },
+    { ref:"1 Cor. 13:4-5",   text:"El amor es sufrido, es benigno; no tiene envidia, no es jactancioso, no se envanece." },
+    { ref:"1 Juan 4:8",      text:"El que no ama no ha conocido a Dios, porque Dios es amor." },
+    { ref:"Juan 15:13",      text:"Nadie tiene mayor amor que este: que alguno ponga su vida por sus amigos." },
+    { ref:"Romanos 8:38-39", text:"Nada nos podrá separar del amor de Dios, que es en Cristo Jesús Señor nuestro." },
+    { ref:"1 Juan 4:19",     text:"Nosotros le amamos a él, porque él nos amó primero." },
   ],
-  peace: [
-    { ref: "Juan 14:27", text: "La paz os dejo, mi paz os doy; yo no os la doy como el mundo la da. No se turbe vuestro corazón, ni tenga miedo." },
-    { ref: "Filipenses 4:7", text: "La paz de Dios, que sobrepasa todo entendimiento, guardará vuestros corazones y vuestros pensamientos en Cristo Jesús." },
-    { ref: "Isaías 26:3", text: "Tú guardarás en perfecta paz a aquel cuyo pensamiento en ti persevera, porque en ti ha confiado." },
-    { ref: "Salmos 46:10", text: "Estad quietos y conoced que yo soy Dios." },
-    { ref: "Mateo 5:9", text: "Bienaventurados los pacificadores, porque ellos serán llamados hijos de Dios." },
+  paz: [
+    { ref:"Juan 14:27",       text:"La paz os dejo, mi paz os doy. No se turbe vuestro corazón, ni tenga miedo." },
+    { ref:"Filipenses 4:7",   text:"La paz de Dios, que sobrepasa todo entendimiento, guardará vuestros corazones y vuestros pensamientos en Cristo Jesús." },
+    { ref:"Isaías 26:3",      text:"Tú guardarás en perfecta paz a aquel cuyo pensamiento en ti persevera." },
+    { ref:"Salmos 46:10",     text:"Estad quietos y conoced que yo soy Dios." },
+    { ref:"Colosenses 3:15",  text:"La paz de Dios gobierne en vuestros corazones." },
+    { ref:"Mateo 5:9",        text:"Bienaventurados los pacificadores, porque ellos serán llamados hijos de Dios." },
   ],
-  strength: [
-    { ref: "Filipenses 4:13", text: "Todo lo puedo en Cristo que me fortalece." },
-    { ref: "Isaías 40:31", text: "Los que esperan al Señor tendrán nuevas fuerzas; levantarán alas como las águilas." },
-    { ref: "Josué 1:9", text: "Mira que te mando que te esfuerces y seas valiente; no temas ni desmayes, porque el Señor tu Dios estará contigo." },
-    { ref: "2 Corintios 12:9", text: "Mi poder se perfecciona en tu debilidad. De buena gana me gloriaré en mis debilidades para que el poder de Cristo repose sobre mí." },
-    { ref: "Salmos 28:7", text: "El Señor es mi fortaleza y mi escudo; en él confió mi corazón, y fui ayudado." },
+  fortaleza: [
+    { ref:"Filipenses 4:13", text:"Todo lo puedo en Cristo que me fortalece." },
+    { ref:"Josué 1:9",       text:"No temas ni desmayes, porque el Señor tu Dios estará contigo en dondequiera que vayas." },
+    { ref:"2 Cor. 12:9",     text:"Mi poder se perfecciona en la debilidad. De buena gana me gloriaré en mis debilidades." },
+    { ref:"Salmos 28:7",     text:"El Señor es mi fortaleza y mi escudo; en él confió mi corazón, y fui ayudado." },
+    { ref:"Isaías 41:10",    text:"No temas, porque yo estoy contigo; no desmayes, porque yo soy tu Dios que te esfuerzo." },
+    { ref:"Efesios 6:10",    text:"Fortaleceos en el Señor y en el poder de su fuerza." },
   ],
-  wisdom: [
-    { ref: "Proverbios 3:5-6", text: "Confía en el Señor con todo tu corazón; no te apoyes en tu propia prudencia. Reconócelo en todos tus caminos, y él dirigirá tus sendas." },
-    { ref: "Santiago 1:5", text: "Si alguno de vosotros tiene falta de sabiduría, pídala a Dios, el cual da a todos abundantemente y sin reproche." },
-    { ref: "Proverbios 9:10", text: "El principio de la sabiduría es el temor del Señor." },
-    { ref: "Eclesiastés 7:12", text: "La sabiduría es defensa y el dinero es defensa; pero la sabiduría da vida a los que la tienen." },
-    { ref: "Proverbios 16:16", text: "Mejor es adquirir sabiduría que oro preciado, y adquirir inteligencia vale más que la plata." },
+  sabiduría: [
+    { ref:"Proverbios 3:5-6", text:"Confía en el Señor con todo tu corazón. Reconócelo en todos tus caminos, y él dirigirá tus sendas." },
+    { ref:"Santiago 1:5",     text:"Si alguno tiene falta de sabiduría, pídala a Dios, el cual da a todos abundantemente." },
+    { ref:"Proverbios 9:10",  text:"El principio de la sabiduría es el temor del Señor." },
+    { ref:"Proverbios 16:16", text:"Mejor es adquirir sabiduría que oro preciado." },
+    { ref:"Proverbios 4:7",   text:"La sabiduría es lo primero. ¡Adquiere sabiduría!" },
+    { ref:"Eclesiastés 7:12", text:"La sabiduría da vida a los que la tienen." },
   ],
-  joy: [
-    { ref: "Nehemías 8:10", text: "El gozo del Señor es vuestra fortaleza." },
-    { ref: "Salmos 118:24", text: "Este es el día que hizo el Señor; regocijémonos y alegrémonos en él." },
-    { ref: "Filipenses 4:4", text: "Regocijaos en el Señor siempre. Otra vez digo: ¡Regocijaos!" },
-    { ref: "Juan 15:11", text: "Estas cosas os he hablado, para que mi gozo esté en vosotros, y vuestro gozo sea completo." },
-    { ref: "Romanos 15:13", text: "El Dios de la esperanza os llene de todo gozo y paz en el creer." },
+  gozo: [
+    { ref:"Nehemías 8:10",   text:"El gozo del Señor es vuestra fortaleza." },
+    { ref:"Salmos 118:24",   text:"Este es el día que hizo el Señor; regocijémonos y alegrémonos en él." },
+    { ref:"Filipenses 4:4",  text:"Regocijaos en el Señor siempre. Otra vez digo: ¡Regocijaos!" },
+    { ref:"Juan 15:11",      text:"Estas cosas os he hablado, para que mi gozo esté en vosotros, y vuestro gozo sea completo." },
+    { ref:"Salmos 16:11",    text:"En tu presencia hay plenitud de gozo; delicias a tu diestra para siempre." },
+    { ref:"Romanos 14:17",   text:"El reino de Dios es justicia, paz y gozo en el Espíritu Santo." },
   ],
-  grace: [
-    { ref: "Efesios 2:8-9", text: "Por gracia sois salvos por medio de la fe; y esto no de vosotros, pues es don de Dios, no por obras." },
-    { ref: "2 Corintios 12:9", text: "Te basta mi gracia; porque mi poder se perfecciona en la debilidad." },
-    { ref: "Hebreos 4:16", text: "Acerquémonos, pues, confiadamente al trono de la gracia, para alcanzar misericordia y hallar gracia." },
-    { ref: "Salmos 84:11", text: "Gracia y gloria dará el Señor. No quitará el bien a los que caminan en integridad." },
-    { ref: "Juan 1:16", text: "De su plenitud tomamos todos, y gracia sobre gracia." },
-  ]
+  gracia: [
+    { ref:"Efesios 2:8-9",   text:"Por gracia sois salvos por medio de la fe; y esto no de vosotros, pues es don de Dios." },
+    { ref:"2 Cor. 12:9",     text:"Te basta mi gracia; porque mi poder se perfecciona en la debilidad." },
+    { ref:"Hebreos 4:16",    text:"Acerquémonos confiadamente al trono de la gracia, para alcanzar misericordia y hallar gracia." },
+    { ref:"Salmos 84:11",    text:"Gracia y gloria dará el Señor. No quitará el bien a los que caminan en integridad." },
+    { ref:"Juan 1:16",       text:"De su plenitud tomamos todos, y gracia sobre gracia." },
+    { ref:"2 Tim. 1:9",      text:"Dios nos salvó según su propósito y la gracia que nos fue dada en Cristo Jesús." },
+  ],
 };
 
 // ─── STATE ────────────────────────────────────────────────────────────────────
-let contacts = JSON.parse(localStorage.getItem('wsp_contacts') || '[]');
-let currentTheme = localStorage.getItem('wsp_theme') || 'faith';
+let currentTheme = 'esperanza';
 let currentVerse = null;
+let contacts = []; // { name, phone, apikey } — nunca se persisten
 
 // ─── INIT ─────────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
-  buildThemeChips();
-  renderContacts();
+  buildChips();
   loadVerse();
-  document.getElementById('theme-select').value = currentTheme;
+  setupDrag();
 });
 
-// ─── THEME CHIPS ──────────────────────────────────────────────────────────────
-const THEME_LABELS = {
-  faith: '🙏 Fe', hope: '🌅 Esperanza', love: '❤️ Amor', peace: '🕊️ Paz',
-  strength: '💪 Fortaleza', wisdom: '📖 Sabiduría', joy: '😊 Gozo', grace: '✨ Gracia'
-};
-
-function buildThemeChips() {
-  const row = document.getElementById('theme-row');
-  row.innerHTML = Object.entries(THEME_LABELS).map(([k, v]) =>
-    `<button class="theme-chip ${k === currentTheme ? 'active' : ''}" onclick="selectTheme('${k}')">${v}</button>`
+// ─── CHIPS ───────────────────────────────────────────────────────────────────
+const THEME_ICONS = { fe:'🙏', esperanza:'🌅', amor:'❤️', paz:'🕊️', fortaleza:'💪', sabiduría:'📖', gozo:'😊', gracia:'✨' };
+function buildChips() {
+  document.getElementById('chips').innerHTML = Object.keys(VERSES).map(k =>
+    `<button class="chip ${k===currentTheme?'active':''}" onclick="setTheme('${k}')">${THEME_ICONS[k]} ${k.charAt(0).toUpperCase()+k.slice(1)}</button>`
   ).join('');
 }
-
-function selectTheme(theme) {
-  currentTheme = theme;
-  localStorage.setItem('wsp_theme', theme);
-  document.getElementById('theme-select').value = theme;
-  buildThemeChips();
+function setTheme(t) {
+  currentTheme = t;
+  buildChips();
   loadVerse();
 }
 
@@ -589,103 +558,186 @@ function loadVerse() {
   document.getElementById('verse-text').textContent = currentVerse.text;
   document.getElementById('verse-ref').textContent = '— ' + currentVerse.ref;
 }
-
 function copyVerse() {
   if (!currentVerse) return;
-  const txt = `📖 ${currentVerse.text}\n— ${currentVerse.ref}`;
-  navigator.clipboard.writeText(txt).then(() => addLog('Versículo copiado al portapapeles', 'info'));
+  navigator.clipboard.writeText(`📖 "${currentVerse.text}"\n— ${currentVerse.ref}`)
+    .then(() => addLog('Versículo copiado', 'info'));
 }
 
-// ─── CONTACTS ─────────────────────────────────────────────────────────────────
-function saveContacts() {
-  localStorage.setItem('wsp_contacts', JSON.stringify(contacts));
+// ─── DRAG & DROP ──────────────────────────────────────────────────────────────
+function setupDrag() {
+  const zone = document.getElementById('upload-zone');
+  zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag'); });
+  zone.addEventListener('dragleave', () => zone.classList.remove('drag'));
+  zone.addEventListener('drop', e => {
+    e.preventDefault();
+    zone.classList.remove('drag');
+    const f = e.dataTransfer.files[0];
+    if (f) handleFile(f);
+  });
+}
+
+// ─── LEER EXCEL ───────────────────────────────────────────────────────────────
+function handleFile(file) {
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const wb = XLSX.read(e.target.result, { type: 'binary' });
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(ws, { header: 1 });
+
+      // Detectar fila de encabezado (buscar columnas nombre/telefono/apikey)
+      let dataRows = rows;
+      if (rows.length > 0) {
+        const first = rows[0].map(c => String(c||'').toLowerCase().trim());
+        const hasHeader = first.some(c => ['nombre','name','telefono','phone'].includes(c));
+        if (hasHeader) dataRows = rows.slice(1);
+      }
+
+      contacts = dataRows
+        .filter(r => r[0] && r[1]) // al menos nombre y teléfono
+        .map(r => ({
+          name:   String(r[0]||'').trim(),
+          phone:  String(r[1]||'').replace(/\D/g,''),
+          apikey: String(r[2]||'').trim(),
+        }))
+        .filter(c => c.phone.length >= 7);
+
+      if (contacts.length === 0) {
+        addLog('No se encontraron contactos válidos en el Excel', 'err');
+        return;
+      }
+      renderContacts();
+      addLog(`✅ ${contacts.length} contacto(s) cargado(s) desde Excel`, 'ok');
+    } catch(err) {
+      addLog('Error al leer el archivo: ' + err.message, 'err');
+    }
+  };
+  reader.readAsBinaryString(file);
+}
+
+// ─── RENDER CONTACTOS ─────────────────────────────────────────────────────────
+function maskPhone(phone) {
+  // Mostrar solo últimos 4 dígitos: +51 *** *** 4321
+  if (phone.length < 4) return '****';
+  const code = phone.length > 10 ? '+' + phone.slice(0, phone.length-9) : '';
+  return `${code} *** *** ${phone.slice(-4)}`;
 }
 
 function renderContacts() {
-  const list = document.getElementById('contact-list');
-  const empty = document.getElementById('empty-msg');
-  if (contacts.length === 0) {
-    list.innerHTML = '';
-    list.appendChild(empty || (() => {
-      const d = document.createElement('div');
-      d.className = 'empty-state';
-      d.id = 'empty-msg';
-      d.textContent = 'No hay contactos aún. Agrega el primero abajo.';
-      return d;
-    })());
-    return;
-  }
-  list.innerHTML = contacts.map((c, i) => `
-    <div class="contact-item">
+  const loaded = document.getElementById('contacts-loaded');
+  const list   = document.getElementById('contact-list');
+  const count  = document.getElementById('contacts-count');
+  const btn    = document.getElementById('btn-send');
+  const note   = document.getElementById('send-note');
+
+  loaded.classList.add('show');
+  count.textContent = `${contacts.length} contacto(s) cargado(s)`;
+
+  list.innerHTML = contacts.map(c => `
+    <div class="contact-row">
       <div class="contact-avatar">${c.name[0].toUpperCase()}</div>
-      <div class="contact-info">
-        <div class="contact-name">${c.name}</div>
-        <div class="contact-number">+${c.phone} · Key: ${c.apikey ? '••••' + c.apikey.slice(-4) : 'sin key'}</div>
-      </div>
-      <button class="contact-del" onclick="removeContact(${i})" title="Eliminar">✕</button>
+      <div class="contact-name">${c.name}</div>
+      <div class="contact-phone">${maskPhone(c.phone)}</div>
+      ${c.apikey
+        ? `<span class="contact-key">✓ key</span>`
+        : `<span class="contact-nokey">sin key</span>`}
     </div>
   `).join('');
+
+  const withKey = contacts.filter(c => c.apikey).length;
+  btn.disabled = withKey === 0;
+  note.textContent = withKey > 0
+    ? `Se enviará a ${withKey} contacto(s) con API key configurada`
+    : 'Ningún contacto tiene API key — agrega las keys en el Excel';
 }
 
-function addContact() {
-  const name = document.getElementById('inp-name').value.trim();
-  const phone = document.getElementById('inp-phone').value.trim().replace(/\D/g, '');
-  const apikey = document.getElementById('inp-apikey').value.trim();
-  if (!name || !phone) { addLog('Nombre y número son obligatorios', 'err'); return; }
-  if (!apikey) { addLog('⚠️ Sin API key: el número no podrá recibir mensajes', 'info'); }
-  contacts.push({ name, phone, apikey });
-  saveContacts();
-  renderContacts();
-  document.getElementById('inp-name').value = '';
-  document.getElementById('inp-phone').value = '';
-  document.getElementById('inp-apikey').value = '';
-  addLog(`Contacto "${name}" agregado`, 'ok');
+function clearContacts() {
+  contacts = [];
+  document.getElementById('contacts-loaded').classList.remove('show');
+  document.getElementById('contact-list').innerHTML = '';
+  document.getElementById('btn-send').disabled = true;
+  document.getElementById('send-note').textContent = 'Carga un Excel con contactos para habilitar el envío';
+  document.getElementById('file-input').value = '';
+  addLog('Lista de contactos borrada de memoria', 'info');
 }
 
-function removeContact(i) {
-  const name = contacts[i].name;
-  contacts.splice(i, 1);
-  saveContacts();
-  renderContacts();
-  addLog(`Contacto "${name}" eliminado`, 'info');
+// ─── DESCARGAR PLANTILLA ──────────────────────────────────────────────────────
+function downloadTemplate() {
+  const wb = XLSX.utils.book_new();
+  const ws = XLSX.utils.aoa_to_sheet([
+    ['nombre', 'telefono', 'apikey'],
+    ['María García', '51987654321', '1234567'],
+    ['Juan Pérez',   '51912345678', '7654321'],
+    ['Ana Torres',   '51999888777', ''],
+  ]);
+  ws['!cols'] = [{ wch: 20 }, { wch: 18 }, { wch: 12 }];
+  XLSX.utils.book_append_sheet(wb, ws, 'Contactos');
+  XLSX.writeFile(wb, 'contactos-versiculo.xlsx');
 }
 
-// ─── SEND ─────────────────────────────────────────────────────────────────────
-async function sendToAll() {
-  if (!currentVerse) { addLog('No hay versículo cargado', 'err'); return; }
-  if (contacts.length === 0) { addLog('Agrega al menos un contacto', 'err'); return; }
+// ─── ENVIAR ───────────────────────────────────────────────────────────────────
+async function sendAll() {
+  if (!currentVerse || contacts.length === 0) return;
+
+  const toSend = contacts.filter(c => c.apikey);
+  if (toSend.length === 0) { addLog('Ningún contacto tiene API key', 'err'); return; }
 
   const btn = document.getElementById('btn-send');
-  btn.disabled = true;
-  const msg = encodeURIComponent(`✨ Versículo del día ✨\n\n📖 "${currentVerse.text}"\n— ${currentVerse.ref}\n\n🙏 Que Dios bendiga tu día`);
+  const progressWrap = document.getElementById('progress-wrap');
+  const progressFill = document.getElementById('progress-fill');
+  const progressText = document.getElementById('progress-text');
 
-  for (const c of contacts) {
-    if (!c.apikey) {
-      addLog(`⚠️ ${c.name}: sin API key, omitido`, 'err');
-      continue;
-    }
+  btn.disabled = true;
+  progressWrap.classList.add('show');
+
+  const days   = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+  const months = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  const now    = new Date();
+  const msgText = `🌅 *Versículo del día*\n${days[now.getDay()]}, ${now.getDate()} de ${months[now.getMonth()]}\n\n📖 _"${currentVerse.text}"_\n\n— *${currentVerse.ref}*\n\n🙏 Que Dios bendiga tu día`;
+  const encoded = encodeURIComponent(msgText);
+
+  let ok = 0, err = 0;
+
+  for (let i = 0; i < toSend.length; i++) {
+    const c = toSend[i];
+    const pct = Math.round(((i) / toSend.length) * 100);
+    progressFill.style.width = pct + '%';
+    progressText.textContent = `Enviando ${i+1} de ${toSend.length}...`;
+
     try {
-      const url = `https://api.callmebot.com/whatsapp.php?phone=${c.phone}&text=${msg}&apikey=${c.apikey}`;
-      const resp = await fetch(url, { mode: 'no-cors' });
-      // no-cors: asumimos éxito si no hay error de red
-      addLog(`✅ Enviado a ${c.name} (+${c.phone})`, 'ok');
-    } catch (e) {
+      await fetch(
+        `https://api.callmebot.com/whatsapp.php?phone=${c.phone}&text=${encoded}&apikey=${c.apikey}`,
+        { mode: 'no-cors' }
+      );
+      addLog(`✅ Enviado a ${c.name}`, 'ok');
+      ok++;
+    } catch(e) {
       addLog(`❌ Error con ${c.name}: ${e.message}`, 'err');
+      err++;
     }
-    await new Promise(r => setTimeout(r, 1200)); // espera entre envíos
+
+    if (i < toSend.length - 1) await wait(2000);
   }
+
+  progressFill.style.width = '100%';
+  progressText.textContent = `Listo: ${ok} enviados${err > 0 ? `, ${err} errores` : ''}`;
+  addLog(`─── Resultado: ${ok} enviados, ${err} errores ───`, 'info');
   btn.disabled = false;
 }
 
+function wait(ms) { return new Promise(r => setTimeout(r, ms)); }
+
 // ─── LOG ──────────────────────────────────────────────────────────────────────
-function addLog(msg, type = 'info') {
-  const area = document.getElementById('log-area');
-  const el = document.createElement('div');
+function addLog(msg, type='info') {
+  const log = document.getElementById('log');
+  const t   = new Date().toLocaleTimeString('es-PE', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
+  const el  = document.createElement('div');
   el.className = `log-item log-${type}`;
-  const time = new Date().toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' });
-  el.textContent = `[${time}] ${msg}`;
-  area.prepend(el);
-  while (area.children.length > 20) area.removeChild(area.lastChild);
+  el.textContent = `[${t}] ${msg}`;
+  log.prepend(el);
+  while (log.children.length > 30) log.removeChild(log.lastChild);
 }
 </script>
 </body>
